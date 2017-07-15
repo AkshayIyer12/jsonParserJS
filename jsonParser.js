@@ -1,5 +1,5 @@
 var fs = require('fs')
-var input = fs.readFileSync('example3.txt', 'utf-8')
+var input = fs.readFileSync('example4.txt', 'utf-8')
 
 function objectParser (input) {
   if (input[0] !== '{') return null
@@ -7,27 +7,21 @@ function objectParser (input) {
   input = input.slice(1)
   var nth
   while (input[0] !== '}') {
-    input = (nth = spaceParser(input)) ? nth[1] : input
-    input = (nth = spaceParser(input)) ? nth[1] : input
-    input = (nth = spaceParser(input)) ? nth[1] : input
-    input = (nth = spaceParser(input)) ? nth[1] : input
-    input = (nth = spaceParser(input)) ? nth[1] : input
-    input = (nth = spaceParser(input)) ? nth[1] : input
-
+    input = (nth = spaceParser(input)) ? nth[0] : input
     let result = stringParser(input)
     if (!result) return null
     let id = result[0]
 
-    result[1] = (nth = spaceParser(result[1])) ? nth[1] : result[1]
+    result[1] = (nth = spaceParser(result[1])) ? nth[0] : result[1]
 
     result = colonParser(result[1].slice())
 
     if (!result) return null
-    result[1] = (nth = spaceParser(result[1])) ? nth[1] : result[1]
+    result[1] = (nth = spaceParser(result[1])) ? nth[0] : result[1]
 
     result = basicParser(result[1].slice())
 
-    result[1] = (nth = spaceParser(result[1])) ? nth[1] : result[1]
+    result[1] = (nth = spaceParser(result[1])) ? nth[0] : result[1]
 
     if (!result) return null
     objPar[id] = result[0]
@@ -38,7 +32,7 @@ function objectParser (input) {
 
     if (result) { input = result[1].slice() }
 
-    input = (nth = spaceParser(input)) ? nth[1] : input
+    input = (nth = spaceParser(input)) ? nth[0] : input
   }
   return [objPar, input.slice(1)]
 }
@@ -56,14 +50,14 @@ function arrayParser (input) {
   var result
   let spaceFound
   input = input.slice(1)
-  input = (spaceFound = spaceParser(input)) ? spaceFound[1] : input
+  input = (spaceFound = spaceParser(input)) ? spaceFound[0] : input
   while (input.length) {
     result = basicParser(input)
     if (result === null) return null
     arr.push(result[0])
     input = result[1].slice()
 
-    input = (spaceFound = spaceParser(input)) ? spaceFound[1] : input
+    input = (spaceFound = spaceParser(input)) ? spaceFound[0] : input
 
     if (input[0] === ']') { return [arr, input.slice(1)] }
     result = commaParser(input)
@@ -75,7 +69,7 @@ function arrayParser (input) {
 
 function nullParser (input) {
   let spaceFound
-  input = (spaceFound = spaceParser(input)) ? spaceFound[1] : input
+  input = (spaceFound = spaceParser(input)) ? spaceFound[0] : input
 
   if (input.slice(0, 4) === 'null') {
     return ([null, input.slice(4, input.length)])
@@ -85,14 +79,14 @@ function nullParser (input) {
 function numberParser (input) {
   let spaceFound
   let regex = /^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?/
-  input = (spaceFound = spaceParser(input)) ? spaceFound[1] : input
+  input = (spaceFound = spaceParser(input)) ? spaceFound[0] : input
   let data = regex.exec(input)
   if (data) return [parseFloat(data[0]), input.substring(data[0].length, input.length)]
 }
 
 function boolParser (input) {
   let spaceFound
-  input = (spaceFound = spaceParser(input)) ? spaceFound[1] : input
+  input = (spaceFound = spaceParser(input)) ? spaceFound[0] : input
   if (input.slice(0, 4) === 'true') { return ([true, input.slice(4, input.length)]) } if (input.slice(0, 5) === 'false') { return ([false, input.slice(5, input.length)]) } return null
 }
 
@@ -100,7 +94,7 @@ function stringParser (input) {
   let i = 0
   let spaceFound
   let data
-  data = (spaceFound = spaceParser(input)) ? spaceFound[1] : input
+  data = (spaceFound = spaceParser(input)) ? spaceFound[0] : input
 
   if (data[0] === '"') {
     data = data.substring(1, data.length)
@@ -111,8 +105,12 @@ function stringParser (input) {
 }
 
 function spaceParser (input) {
-  let Index = input.search(/(^\s)+/)
-  if (Index === -1) { return '' } else { return [input.slice(Index, Index + 1), input.slice(Index + 1, input.length)] }
+  var Index = input.search(/^(\s)+/)
+  while (Index === 0) {
+    input = input.slice(Index + 1, input.length)
+    Index = input.search(/^(\s|\n|\t)+/)
+  }
+  if (Index === -1) { return [input] }
 }
 
 function commaParser (input) {
