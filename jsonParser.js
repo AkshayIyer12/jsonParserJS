@@ -1,5 +1,5 @@
 var fs = require('fs')
-var input = fs.readFileSync('example2.txt', 'utf-8')
+var input = fs.readFileSync('example3.txt', 'utf-8')
 
 function objectParser (input) {
   if (input[0] !== '{') return null
@@ -42,7 +42,8 @@ function objectParser (input) {
   }
   return [objPar, input.slice(1)]
 }
-const colonParser = (input) => {
+
+function colonParser (input) {
   let Index = input.search(/:?/g)
   if (Index === -1) { return '' }
   return ([input.slice(Index, Index + 1), input.slice(Index + 1, input.length)])
@@ -72,7 +73,7 @@ function arrayParser (input) {
   }
 }
 
-const nullParser = (input) => {
+function nullParser (input) {
   let spaceFound
   input = (spaceFound = spaceParser(input)) ? spaceFound[1] : input
 
@@ -81,7 +82,7 @@ const nullParser = (input) => {
   }
 }
 
-const numberParser = (input) => {
+function numberParser (input) {
   let spaceFound
   let regex = /^[-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?/
   input = (spaceFound = spaceParser(input)) ? spaceFound[1] : input
@@ -89,13 +90,13 @@ const numberParser = (input) => {
   if (data) return [parseFloat(data[0]), input.substring(data[0].length, input.length)]
 }
 
-const boolParser = (input) => {
+function boolParser (input) {
   let spaceFound
   input = (spaceFound = spaceParser(input)) ? spaceFound[1] : input
   if (input.slice(0, 4) === 'true') { return ([true, input.slice(4, input.length)]) } if (input.slice(0, 5) === 'false') { return ([false, input.slice(5, input.length)]) } return null
 }
 
-const stringParser = (input) => {
+function stringParser (input) {
   let i = 0
   let spaceFound
   let data
@@ -109,24 +110,23 @@ const stringParser = (input) => {
   return null
 }
 
-const spaceParser = (input) => {
+function spaceParser (input) {
   let Index = input.search(/(^\s)+/)
-
   if (Index === -1) { return '' } else { return [input.slice(Index, Index + 1), input.slice(Index + 1, input.length)] }
 }
 
-const commaParser = (input) => {
+function commaParser (input) {
   if (input[0] === ',') return [input.slice(0, 1), input.slice(1)]
   return null
 }
-const squareBracketParser = (input) => {
+function squareBracketParser (input) {
   let i = 0
   if (input[i] === '[') {
     if (input[i + 1] === ']') { return ([input.slice(i, i + 2), input.slice(i + 2, input.length)]) } else { return null }
   } else { return null }
 }
 
-const paranthesisParser = (input) => {
+function paranthesisParser (input) {
   let i = 0
   if (input[i] === '{') {
     if (input[i + 1] === '}') { return ([input.slice(i, i + 2), input.slice(i + 2, input.length)]) } else { return null }
@@ -143,4 +143,4 @@ function basicParser (input) {
   if (objectParser(input)) return objectParser(input)
   return null
 }
-console.log(basicParser(input))
+console.log(JSON.stringify(basicParser(input), null, 2))
