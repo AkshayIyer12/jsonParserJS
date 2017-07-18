@@ -1,5 +1,5 @@
 var fs = require('fs')
-var input = fs.readFileSync('example4.txt', 'utf-8')
+var input = fs.readFileSync('example3.txt', 'utf-8')
 
 function objectParser (input) {
   if (input[0] !== '{') return null
@@ -26,11 +26,12 @@ function objectParser (input) {
     if (!result) return null
     objPar[id] = result[0]
 
-    input = result[1].slice()
+    input = result[1]
+    console.log(input)
 
     result = commaParser(input)
 
-    if (result) { input = result[1].slice() }
+    if (result) { input = result[1] }
 
     input = (nth = spaceParser(input)) ? nth[0] : input
   }
@@ -38,7 +39,7 @@ function objectParser (input) {
 }
 
 function colonParser (input) {
-  let Index = input.search(/:?/g)
+  let Index = input.search(/:?/)
   if (Index === -1) { return '' }
   return ([input.slice(Index, Index + 1), input.slice(Index + 1, input.length)])
 }
@@ -86,7 +87,7 @@ function numberParser (input) {
 
 function boolParser (input) {
   let spaceFound
-  input = (spaceFound = spaceParser(input)) ? spaceFound[0] : input
+  //input = (spaceFound = spaceParser(input)) ? spaceFound[0] : input
   if (input.slice(0, 4) === 'true') { return ([true, input.slice(4, input.length)]) } if (input.slice(0, 5) === 'false') { return ([false, input.slice(5, input.length)]) } return null
 }
 
